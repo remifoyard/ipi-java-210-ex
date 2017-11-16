@@ -1,15 +1,48 @@
 package com.ipiecoles.java.java210;
 
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
 public class Sudoku {
 
+	public static final String FIN_SAISIE = "FIN";
+	public static boolean resolu = false;
+	public short[][] sudokuAResoudre;
 	/**
 	 * Constructeur par défaut
 	 */
-	public Sudoku() {
+	public Sudoku() {		
+		sudokuAResoudre = new short[9][9];
 	}
-
-	public boolean ligneSaisieEstCoherente(String ligneSaisie) {
-		return true;
+	
+	public short [][] getSudokuAResoudre(){
+		return this.sudokuAResoudre;
+	}
+	public void setSudokuAResoudre(short [][] valeur){
+            this.sudokuAResoudre = valeur;
+        }
+	
+	public boolean ligneSaisieEstCoherente(String ligneSaisie) {		
+		if(ligneSaisie == null || ligneSaisie.trim().equals(""))
+		{
+		    String message = "Les coordonnées du chiffre et/ou sa valeur ne peuvent pas être nulles, vides ou remplies avec des espaces";
+		    System.out.println(message);
+			return false;
+		}
+		else if(ligneSaisie.length()!=3){
+		    String message = "Les coordonnées du chiffre et/ou sa valeur doit faire 3 caractères";
+		    System.out.println(message);
+			return false;
+		}
+		else if(!ligneSaisie.substring(0,1).matches("[0-8]") || !ligneSaisie.substring(1,2).matches("[0-8]") || !ligneSaisie.substring(2,3).matches("[1-9]")){
+		    String message = "L'abscisse et l'ordonnée doivent être compris entre 0 et 8, la valeur entre 1 et 9";
+		    System.out.println(message);
+			return false;
+		}
+		else
+		{
+			return true;			
+		}
 	}
 	
 	/**
@@ -26,7 +59,35 @@ public class Sudoku {
 	 * @return Un tableau comportant les coordonnées des chiffres présents dans le sudoku à résoudre
 	 */
 	public String[] demandeCoordonneesSudoku() {
-		return null;
+		String[] tableauCoordonnees = new String [81];
+		int i=0;
+	    Scanner sc = new Scanner(System.in);
+		String saisie;
+		do
+		{
+		    System.out.print("Inscrivez X Y et la valeur :");
+		    try
+		    {
+		    	//if(scanner.hasNextLines)
+			    saisie = sc.nextLine();
+		    }
+		    catch (NoSuchElementException error) {
+				System.out.println("Aucune valeur de saisie.");
+				break;
+			} 
+		    if(!saisie.equals("FIN"))
+		    {
+				if(ligneSaisieEstCoherente(saisie)==true)
+				{
+					tableauCoordonnees[i] = saisie;
+				}
+				i++;
+		    }
+		}
+		while(!saisie.equals("FIN"));
+		sc.close();
+		//System.out.println(tableauCoordonnees);
+		return tableauCoordonnees;
 	}
 	
 	/**
@@ -40,7 +101,22 @@ public class Sudoku {
 	 * @param tableauCoordonnees
 	 */
 	public void remplitSudokuATrous(String[] tableauCoordonnees) {
-		
+		for(String element : tableauCoordonnees)
+		{
+			if(element == null){break;}
+			String x = element.substring(0, 1);
+			int x2 = stringToInt(x);
+			short x3 = (short)x2;
+			
+			String y = element.substring(1, 2);
+			int y2 = stringToInt(y);
+			short y3 = (short)y2;
+			
+			String valeur = element.substring(2, 3);
+			int valeur2 = stringToInt(valeur);
+			short valeur3 = (short)valeur2;
+			this.sudokuAResoudre[x3][y3] = valeur3;
+		}
     }
 	
 	private int stringToInt(String s) {
@@ -69,7 +145,54 @@ public class Sudoku {
 	 * non trouvée (dans ce cas, le programme affiche un blanc à la place de 0
 	 */
 	public void ecrireSudoku(short[][] sudoku) {
-		
+		String message = " -----------------------\n";
+		int f = 0;
+		int l = 0;
+		int s = 0;
+		while(f<3)// ligne de 3 lignes
+		{
+			if(f==0)
+			{
+				l = 0;
+				s = 3;
+			}
+			else if(f==1)
+			{
+				l = 3;
+				s = 6;
+			}
+			else if(f==2)
+			{
+				l = 6;
+				s = 9;
+			}
+			
+			for(int i=l;i<s;i++)
+			{
+				for(int j=0;j<9;j++)
+				{
+					if(j==0 || j==3 || j==6)
+					{
+						message +="| ";
+					}
+					if(sudoku[i][j] == 0)
+					{
+					    message +="  ";
+					}
+					else
+					{
+					    message +=sudoku[i][j]+" ";
+					}
+					if(j==8)
+					{
+						message += "|\n";
+					}
+				}
+			}
+			message += " -----------------------\n";
+			f++;
+		}
+	    System.out.print(message);
     }
 	
 	/**
@@ -87,10 +210,84 @@ public class Sudoku {
 	 * @return
 	 */
 	public boolean estAutorise(int abscisse, int ordonnee, short chiffre, short[][] sudoku) {
+		int i=0;
+		for(i=0;i<9;i++)
+		{
+			if(sudoku[abscisse][i]==chiffre)
+			{
+				return false;
+			}
+		}
+		
+		int j=0;
+		for(j=0;j<9;j++)
+		{
+			if(sudoku[j][ordonnee]==chiffre)
+			{
+				return false;
+			}
+		}
+		
+		int l = 0;
+		int s = 0;
+		
+		int x_dep = 0;
+		int x_fin = 0;
+		if(abscisse>=0 && abscisse <3){x_dep=0;x_fin=3;}
+		if(abscisse>=3 && abscisse <6){x_dep=3;x_fin=6;}
+		if(abscisse>=6 && abscisse <9){x_dep=6;x_fin=9;}
+		
+		int y_dep = 0;
+		int y_fin = 0;
+		if(ordonnee>=0 && ordonnee <3){y_dep=0;y_fin=3;}
+		if(ordonnee>=3 && ordonnee <6){y_dep=3;y_fin=6;}
+		if(ordonnee>=6 && ordonnee <9){y_dep=6;y_fin=9;}
+		
+		for(l=x_dep;l<x_fin;l++)
+		{
+			for(s=y_dep;s<y_fin;s++)
+			{
+				if(sudoku[l][s]==chiffre)
+				{
+					return false;
+				}
+			}
+		}
 		return true;
     }
 
 	public boolean resoudre(int abscisse, int ordonnee, short[][] sudoku) {
-		return true;
+	    
+	    if (abscisse == 9) {
+			//Si on est arrivé au bout de la ligne, on remet l'abscisse à 0
+		    abscisse = 0;
+		    //Et on augmente l'ordonnée
+		    if (++ordonnee == 9) {
+		    	//On sort de la méthode si on dépasse la dernière colonne
+		    	return true; 
+			}
+		}
+	    
+		if(sudoku[abscisse][ordonnee]!=0)
+		{
+			return resoudre(abscisse+1, ordonnee, sudoku);
+		}
+		else
+		{	
+    		for(short k=1;k<=9;k++)
+    		{
+    			if(this.estAutorise(abscisse, ordonnee, k, sudoku))
+    			{
+    				sudoku[abscisse][ordonnee]=k;
+    				if(resoudre(abscisse+1, ordonnee, sudoku))
+					{
+    					return true;
+    					//int z = 0;
+					}
+    			}
+			}
+    		sudoku[abscisse][ordonnee]=0;
+    		return false;
+		}
     }
 }
